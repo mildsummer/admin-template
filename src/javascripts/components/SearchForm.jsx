@@ -54,7 +54,7 @@ class SearchForm extends PureComponent {
           ))}
         </div>
         <div className="search-form__button-wrapper">
-          {onSubmit && <button className="search-form__button" type="submit">{submitButtonTitle}</button>}
+          {onSubmit && <button className="button search-form__button" type="submit">{submitButtonTitle}</button>}
         </div>
       </form>
     );

@@ -1,4 +1,5 @@
 import queryString from 'querystring';
+import flatten from 'lodash.flatten';
 import { ITEM_PER_PAGE, QUERY_STRING_OPTIONS } from './constants/common';
 
 export default class FirestorePagination {
@@ -67,11 +68,23 @@ export default class FirestorePagination {
       if (this.lastDocMap[queryKey] && result.docs[result.docs.length - 1].isEqual(this.lastDocMap[queryKey])) {
         this.pageLengthMap[queryKey] = page;
       }
+    } else if (page === 1) {
+      this.pageLengthMap[queryKey] = 0;
     }
 
     return {
       result,
       length: typeof this.pageLengthMap[queryKey] === 'number' ? this.pageLengthMap[queryKey] : Infinity
     };
+  }
+
+  async getAllDocs(query) {
+    const queryKey = queryString.stringify(query, QUERY_STRING_OPTIONS);
+    if (typeof this.pageLengthMap[queryKey] === 'number') {
+      return flatten(this.map[queryKey].map((snapshot) => (snapshot.docs)));
+    } else {
+      const result = await this._getRef(query).get();
+      return result.docs;
+    }
   }
 }

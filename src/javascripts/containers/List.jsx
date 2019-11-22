@@ -9,6 +9,7 @@ import SearchForm from '../components/SearchForm';
 import Pagination from '../components/Pagination';
 import SearchDetail from "../components/SearchDetail";
 import UserList from "../components/UserList";
+import arrayToCsv from "../utils/arrayToCsv";
 
 const SEARCH_CONFIG = [
   {
@@ -37,6 +38,7 @@ class List extends Component {
   constructor(props) {
     super(props);
     this.handleChangeQuery = this.handleChangeQuery.bind(this);
+    this.export = this.export.bind(this);
     this.db = new FirestorePagination(db.collection('/members'), 'id', 'desc');
     this.state = {
       data: null,
@@ -85,6 +87,17 @@ class List extends Component {
     }
   }
 
+  async export() {
+    const { query } = this.props;
+    const docs = await this.db.getAllDocs(assign({}, query, { page: null }));
+    const csvContent = arrayToCsv(docs.map((doc) => (doc.data())));
+    const downLoadLink = document.createElement("a");
+    downLoadLink.download = 'data.csv';
+    downLoadLink.href = URL.createObjectURL(new Blob([csvContent], { type: "text/csv" }));
+    downLoadLink.dataset.downloadurl = ["text/csv", downLoadLink.download, downLoadLink.href].join(":");
+    downLoadLink.click();
+  }
+
   render() {
     const { data, isLoading, pageLength } = this.state;
     const { query } = this.props;
@@ -101,10 +114,17 @@ class List extends Component {
             .filter((item) => (item.value))
           }
         />
+        <button
+          className="button"
+          type="button"
+          onClick={this.export}
+        >
+          CSVエクスポート
+        </button>
         {data && (
           <UserList data={data} loading={isLoading} />
         )}
-        {data && pageLength ? (
+        {data ? (
           <Pagination
             length={pageLength}
             current={query.page}
