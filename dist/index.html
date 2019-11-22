@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# website: http://ogp.me/ns/website#">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Admin Boilerplate</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="apple-mobile-web-app-title" content="Admin Boilerplate">
+  <link rel="shortcut icon" href="favicon.png">
+  <link rel="apple-touch-icon" href="favicon.png">
+  <style>
+    .splash {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      z-index: 100;
+      background-color: #c3c875;
+      text-indent: 100%;
+      overflow: hidden;
+      white-space: nowrap;
+      transition: opacity 300ms ease;
+    }
+    .splash--hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+<div class="splash"></div>
+<div id="app"></div>
+<script src="./assets/app.js"></script>
+</body>
+</html>

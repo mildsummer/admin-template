@@ -1,0 +1,17 @@
+.pagination
+  display: flex
+  margin: 16px 0 0
+  &__button
+    padding: 4px
+    margin: 0 10px 0 0
+    &--prev
+      order: 0
+      background-color: $color-light-gray
+    &--next
+      order: 2
+      background-color: $color-light-gray
+    &:disabled
+      background: none
+  &__list
+    display: flex
+    order: 1

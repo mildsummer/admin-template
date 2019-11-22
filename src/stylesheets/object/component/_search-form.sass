@@ -1,0 +1,37 @@
+.search-form
+  width: 100%
+  &__field
+    display: flex
+    margin: 0
+    padding: 0
+    border: none
+    flex-wrap: wrap
+  &__item
+    display: block
+    width: 50%
+    box-sizing: border-box
+    &:nth-child(2n + 1)
+      padding-right: 8px
+    &:nth-child(2n)
+      padding-left: 8px
+  &__name
+    +fontSize(10px)
+    color: $color-dark-gray
+    margin: 0
+  &__input
+    +fontSize(14px)
+    width: 100%
+    padding: 10px
+    background-color: $color-light-gray
+    box-sizing: border-box
+  &__button
+    +fontSize(14px)
+    width: 100%
+    max-width: 240px
+    background-color: $color-accent
+    padding: 10px
+    color: $color-white
+    font-weight: bold
+    &-wrapper
+      margin: 16px 0 0
+      display: flex

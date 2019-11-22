@@ -1,0 +1,20 @@
+.user-list
+  width: 100%
+  margin: 16px 0 0
+  padding: 0
+  transition: opacity 200ms ease
+  &--loading
+    opacity: 0.3
+  &--empty
+    display: flex
+    justify-content: center
+    align-items: center
+    background-color: $color-light-gray
+    min-height: 160px
+    &::after
+      content: 'NO RESULTS'
+      color: $color-dark-gray
+  &__item
+    display: flex
+    &:nth-child(2n + 1)
+      background-color: #fafafa
