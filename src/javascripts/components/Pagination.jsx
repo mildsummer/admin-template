@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import times from 'lodash.times';
+// import times from 'lodash.times';
 
 const Pagination = (props) => (
   <div className="pagination">
@@ -20,7 +20,7 @@ const Pagination = (props) => (
     >
       次へ
     </button>
-    <ul className="pagination__list">
+    {/* <ul className="pagination__list">
       {times(props.length).map((index) => (
         <li key={index} className="pagination__item">
           <button
@@ -33,7 +33,7 @@ const Pagination = (props) => (
           </button>
         </li>
       ))}
-    </ul>
+    </ul> */}
   </div>
 );
 

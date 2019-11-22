@@ -3,6 +3,7 @@ const path = require('path');
 const RemoveSourceMapUrlWebpackPlugin = require('./remove-source-map-url-webpack-plugin.js');
 const LicenseInfoWebpackPlugin = require('license-info-webpack-plugin').default;
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const Dotenv = require('dotenv-webpack');
 
 module.exports = (env, argv) => {
   const PROD = argv.mode === 'production';
@@ -109,6 +110,9 @@ module.exports = (env, argv) => {
       ]
     } : {},
     plugins: PROD ? [
+      new Dotenv({
+        path: path.resolve(__dirname, './.env')
+      }),
       new webpack.NormalModuleReplacementPlugin(
         /^hammerjs$/,
         'hammerjs/hammer.min.js'
@@ -126,6 +130,9 @@ module.exports = (env, argv) => {
         process.stdout.write('progress ' + Math.floor(percentage * 100) + '% ' + msg + '\r');
       })
     ] : [
+      new Dotenv({
+        path: path.resolve(__dirname, './.env')
+      }),
       new webpack.DefinePlugin({
         'process.env.NODE_ENV': '"development"'
       }),

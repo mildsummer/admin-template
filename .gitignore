@@ -4,6 +4,9 @@
 *.map
 npm-debug.log
 yarn-error.log
+/firebase/node_modules
+/firebase/key.json
+.env
 
 # Created by https://www.gitignore.io
 

@@ -1,13 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from "prop-types";
 import queryString from 'query-string';
-
-const queryStringOptions = {
-  arrayFormat: 'bracket',
-  parseNumbers: true,
-  parseBooleans: true,
-  skipNull: true
-};
+import { QUERY_STRING_OPTIONS } from '../constants/common';
 
 export default (WrappedComponent) => {
   class ComponentWithQuery extends Component {
@@ -18,12 +12,12 @@ export default (WrappedComponent) => {
 
     navigateByQuery(path = null, query) {
       const { location, history } = this.props;
-      history.push(`#${path || location.pathname}?${queryString.stringify(query, queryStringOptions)}`);
+      history.push(`#${path || location.pathname}?${queryString.stringify(query, QUERY_STRING_OPTIONS)}`);
     }
 
     render() {
       const { location } = this.props;
-      const query = queryString.parse((location.hash || location.search).split('?')[1], queryStringOptions);
+      const query = queryString.parse((location.hash || location.search).split('?')[1], QUERY_STRING_OPTIONS);
       return <WrappedComponent {...this.props} query={query} navigateByQuery={this.navigateByQuery} />;
     }
   }

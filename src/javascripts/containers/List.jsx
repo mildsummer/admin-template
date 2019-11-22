@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import API from '../utils/API';
 import isEqual from 'lodash.isequal';
 import assign from 'lodash.assign';
+import { db } from '../Firebase';
+import FirestorePagination from "../FirestorePagination";
 import withQuery from './_withQuery';
 import SearchForm from '../components/SearchForm';
 import Pagination from '../components/Pagination';
@@ -27,7 +28,7 @@ const SEARCH_CONFIG = [
     props: {
       type: 'text',
       name: 'queryAddress',
-      placeholder: 'ex) 東京都'
+      placeholder: 'ex) 東京'
     }
   }
 ];
@@ -36,9 +37,11 @@ class List extends Component {
   constructor(props) {
     super(props);
     this.handleChangeQuery = this.handleChangeQuery.bind(this);
+    this.db = new FirestorePagination(db.collection('/members'), 'id', 'desc');
     this.state = {
       data: null,
-      isLoading: false
+      isLoading: false,
+      pageLength: Infinity
     };
   }
 
@@ -53,15 +56,16 @@ class List extends Component {
     }
   }
 
-  fetch(query = null) {
+  async fetch(query = null) {
     this.setState({
       isLoading: true
     });
-    API.fetchData(query)
-      .then(data => this.setState({
-        data,
-        isLoading: false
-      }));
+    const { result, length } = await this.db.get(assign({}, query, { page: null }), query.page || 1);
+    this.setState({
+      data: result ? result.docs.map((doc) => (doc.data())) : [],
+      isLoading: false,
+      pageLength: length
+    });
   }
 
   handleChangeQuery(queryKey) {
@@ -72,6 +76,9 @@ class List extends Component {
       changedQuery.forEach((value, index) => {
         query[keys[index]] = value;
       });
+      if (queryKey !== 'page') {
+        query.page = 1;
+      }
       if (!isEqual(currentQuery, query)) {
         navigateByQuery('/', query);
       }
@@ -79,9 +86,8 @@ class List extends Component {
   }
 
   render() {
-    const { data, isLoading } = this.state;
+    const { data, isLoading, pageLength } = this.state;
     const { query } = this.props;
-    const length = 10;
     return (
       <div className="container">
         <SearchForm
@@ -98,8 +104,13 @@ class List extends Component {
         {data && (
           <UserList data={data} loading={isLoading} />
         )}
-        {data && length
-          ? <Pagination length={length} current={query.page} onSelect={this.handleChangeQuery('page')} /> : null}
+        {data && pageLength ? (
+          <Pagination
+            length={pageLength}
+            current={query.page}
+            onSelect={this.handleChangeQuery('page')}
+          />
+        ) : null}
       </div>
     );
   }

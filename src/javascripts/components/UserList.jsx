@@ -13,8 +13,7 @@ const UserList = (props) => (
       <li key={item.id} className="user-list__item">
         <p className="user-list__value">{item.id || '-'}</p>
         <p className="user-list__value">{item.email || '-'}</p>
-        <p className="user-list__value">{item.address ? item.address.name : '-'}</p>
-        <p className="user-list__value">{item.memo || '-'}</p>
+        <p className="user-list__value">{item.address ? item.address : '-'}</p>
       </li>
     ))}
   </ul>
@@ -23,12 +22,9 @@ const UserList = (props) => (
 UserList.propTypes = {
   loading: PropTypes.bool,
   data: PropTypes.arrayOf(PropTypes.shape({
-    id: PropTypes.string.isRequired,
+    id: PropTypes.number.isRequired,
     email: PropTypes.string.isRequired,
-    address: PropTypes.shape({
-      name: PropTypes.string.isRequired
-    }).isRequired,
-    memo: PropTypes.string.isRequired
+    address: PropTypes.string.isRequired
   })).isRequired
 };
 
