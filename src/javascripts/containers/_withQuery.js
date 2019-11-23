@@ -17,7 +17,7 @@ export default (WrappedComponent) => {
     }
 
     /**
-     * ページ遷移
+     * クエリを渡してハッシュ遷移
      * @param {string} path
      * @param {object} query
      */

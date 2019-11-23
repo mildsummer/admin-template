@@ -8,7 +8,6 @@ import { ITEM_PER_PAGE, QUERY_STRING_OPTIONS } from '../constants/common';
  */
 export default class FirestorePagination {
   /**
-   *
    * @param {string} baseCollectionPath
    * @param {string} orderFieldPath
    * @param {string} directionStr
@@ -76,26 +75,26 @@ export default class FirestorePagination {
     const queryKey = queryString.stringify(query, QUERY_STRING_OPTIONS);
     let current = this.map[queryKey];
     let result = null;
-    if (current) {
-      if (current[pageIndex]) {
+    if (current) { // すでに同じクエリで取得済み
+      if (current[pageIndex]) { // 同じページを取得済み
         result = current[pageIndex];
-      } else if (current[pageIndex - 1]) {
+      } else if (current[pageIndex - 1]) { // 前のページを取得済み
         const prevPageDocs = current[pageIndex - 1].docs;
         const startAfter = prevPageDocs[prevPageDocs.length - 1];
         result = await fsQuery.startAfter(startAfter).limit(itemPerPage).get();
-      } else if (current[page]) {
+      } else if (current[pageIndex + 1]) { // 次のページを取得済み（発生しないはずだけど一応）
         const endBefore = current[page].docs[0];
         result = await fsQuery.endBefore(endBefore).limit(itemPerPage).get();
-      } else if (page <= this.lastDocMap[queryKey]) {
+      } else if (page <= this.pageLengthMap[queryKey]) { // ページを飛ばした場合
         await this._loadAllPageTo(query, page);
-        result = this.map[queryKey][pageIndex];
+        result = current[pageIndex];
       }
-    } else if (page === 1) {
+    } else if (page === 1) { // 初めてのクエリで最初のページ
       result = await fsQuery.limit(itemPerPage).get();
       current = [];
       this.map[queryKey] = current;
       this.lastDocMap[queryKey] = await this._getLastDoc(query);
-    } else {
+    } else { // 初めてのクエリでページを飛ばした場合
       await this._loadAllPageTo(query, page);
       result = this.map[queryKey][pageIndex];
     }
