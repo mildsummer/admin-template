@@ -22,11 +22,13 @@
       {"property": "myFavoriteWrapper"}
     ]
   },
-  "extends": ["eslint:recommended", "plugin:react/recommended"],
+  "extends": ["eslint:recommended", "plugin:react/recommended", "airbnb"],
   "rules": {
     "react/jsx-uses-react": "error",
     "react/jsx-uses-vars": "error",
-    "no-console": "warn"
+    "no-console": "warn",
+    "no-underscore-dangle": [2, { "allowAfterThis": true }],
+    "no-await-in-loop": "off"
   },
   "parser": "babel-eslint",
   "plugins": [

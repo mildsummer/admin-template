@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import React, { createElement, PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import assign from 'lodash.assign';
 
@@ -8,7 +8,7 @@ class SearchForm extends PureComponent {
     this.onChange = this.onChange.bind(this);
     this.onSubmit = this.onSubmit.bind(this);
     this.state = {
-      values: props.defaultValues.concat()
+      values: props.defaultValues.concat(),
     };
   }
 
@@ -22,7 +22,7 @@ class SearchForm extends PureComponent {
       if (typeof onChange === 'function') {
         onChange(values);
       }
-    }
+    };
   }
 
   onSubmit(e) {
@@ -30,7 +30,7 @@ class SearchForm extends PureComponent {
     const { onSubmit } = this.props;
     const { values } = this.state;
     if (typeof onSubmit === 'function') {
-      onSubmit.apply(null, values);
+      onSubmit(...values);
     }
   }
 
@@ -41,16 +41,17 @@ class SearchForm extends PureComponent {
       <form className="search-form" action="#" onSubmit={this.onSubmit}>
         <div className="search-form__field">
           {inputs.map((input, index) => (
-            <label className="search-form__item" key={index}>
-              <p className="search-form__name">
+            <div className="search-form__item" key={input.key}>
+              <label className="search-form__name" htmlFor={input.props.name}>
                 {input.label}
-              </p>
-              <input
-                className="search-form__input"
-                onChange={this.onChange(index)}
-                {...assign({}, input.props, { value: values[index] })}
-              />
-            </label>
+              </label>
+              {createElement('input', assign({}, input.props, {
+                className: 'search-form__input',
+                onChange: this.onChange(index),
+                value: values[index],
+                name: input.props.name,
+              }))}
+            </div>
           ))}
         </div>
         <div className="search-form__button-wrapper">
@@ -64,7 +65,8 @@ class SearchForm extends PureComponent {
 SearchForm.defaultProps = {
   submitButtonTitle: '検索',
   onChange: null,
-  onSubmit: null
+  onSubmit: null,
+  defaultValues: [],
 };
 
 SearchForm.propTypes = {
@@ -74,16 +76,16 @@ SearchForm.propTypes = {
       label: PropTypes.string,
       props: PropTypes.shape({
         type: PropTypes.oneOf(['text', 'number']).isRequired,
-        name: PropTypes.string,
+        name: PropTypes.string.isRequired,
         placeholder: PropTypes.string,
-        size: PropTypes.number
-      })
-    })
+        size: PropTypes.number,
+      }),
+    }),
   ).isRequired,
   defaultValues: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number])),
   submitButtonTitle: PropTypes.string,
   onChange: PropTypes.func,
-  onSubmit: PropTypes.func
+  onSubmit: PropTypes.func,
 };
 
 export default SearchForm;

@@ -3,5 +3,5 @@ export const QUERY_STRING_OPTIONS = {
   arrayFormat: 'bracket',
   parseNumbers: true,
   parseBooleans: true,
-  skipNull: true
+  skipNull: true,
 };

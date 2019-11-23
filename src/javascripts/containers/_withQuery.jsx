@@ -1,6 +1,7 @@
-import React, { Component } from 'react';
-import PropTypes from "prop-types";
+import { createElement, Component } from 'react';
+import PropTypes from 'prop-types';
 import queryString from 'query-string';
+import assign from 'lodash.assign';
 import { QUERY_STRING_OPTIONS } from '../constants/common';
 
 export default (WrappedComponent) => {
@@ -18,13 +19,22 @@ export default (WrappedComponent) => {
     render() {
       const { location } = this.props;
       const query = queryString.parse((location.hash || location.search).split('?')[1], QUERY_STRING_OPTIONS);
-      return <WrappedComponent {...this.props} query={query} navigateByQuery={this.navigateByQuery} />;
+      return createElement(
+        WrappedComponent,
+        assign({}, this.props, { query, navigateByQuery: this.navigateByQuery }),
+      );
     }
   }
 
   ComponentWithQuery.propTypes = {
-    location: PropTypes.any,
-    history: PropTypes.any
+    location: PropTypes.shape({
+      hash: PropTypes.string.isRequired,
+      search: PropTypes.string.isRequired,
+      pathname: PropTypes.string.isRequired,
+    }).isRequired,
+    history: PropTypes.shape({
+      push: PropTypes.func.isRequired,
+    }).isRequired,
   };
 
   return ComponentWithQuery;

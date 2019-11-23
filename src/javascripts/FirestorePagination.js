@@ -29,13 +29,13 @@ export default class FirestorePagination {
   }
 
   async _loadAllPageTo(query, page) {
-    for (let i = 1; i <= page; i++) {
+    for (let i = 1; i <= page; i += 1) {
       await this.get(query, i);
     }
   }
 
   async get(query, page = 1, itemPerPage = ITEM_PER_PAGE) {
-    let pageIndex = page ? page - 1 : 0;
+    const pageIndex = page ? page - 1 : 0;
     const ref = this._getRef(query);
     const queryKey = queryString.stringify(query, QUERY_STRING_OPTIONS);
     let current = this.map[queryKey];
@@ -65,7 +65,8 @@ export default class FirestorePagination {
     }
     if (result && result.docs.length) {
       this.map[queryKey][pageIndex] = result;
-      if (this.lastDocMap[queryKey] && result.docs[result.docs.length - 1].isEqual(this.lastDocMap[queryKey])) {
+      if (this.lastDocMap[queryKey]
+        && result.docs[result.docs.length - 1].isEqual(this.lastDocMap[queryKey])) {
         this.pageLengthMap[queryKey] = page;
       }
     } else if (page === 1) {
@@ -74,17 +75,19 @@ export default class FirestorePagination {
 
     return {
       result,
-      length: typeof this.pageLengthMap[queryKey] === 'number' ? this.pageLengthMap[queryKey] : Infinity
+      length: typeof this.pageLengthMap[queryKey] === 'number' ? this.pageLengthMap[queryKey] : Infinity,
     };
   }
 
   async getAllDocs(query) {
     const queryKey = queryString.stringify(query, QUERY_STRING_OPTIONS);
+    let docs = null;
     if (typeof this.pageLengthMap[queryKey] === 'number') {
-      return flatten(this.map[queryKey].map((snapshot) => (snapshot.docs)));
+      docs = flatten(this.map[queryKey].map((snapshot) => (snapshot.docs)));
     } else {
       const result = await this._getRef(query).get();
-      return result.docs;
+      docs = result.docs;
     }
+    return docs;
   }
 }

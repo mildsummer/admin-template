@@ -8,19 +8,17 @@ export default (array) => {
     });
   });
   const lineArray = [keys.join(',')].concat(
-    array.map((data) => {
-      return keys.map((key) => {
-        if (typeof data[key] === 'undefined') {
-          return '';
-        } else if (typeof data[key] === 'number') {
-          return data[key];
-        } else if (typeof data[key] === 'string') {
-          return `"${data[key]}"`;
-        } else {
-          return `"${JSON.stringify(data[key]).replace(/"/g, '""')}"`;
-        }
-      }).join(",");
-    })
+    array.map((data) => keys.map((key) => {
+      let valueString = '';
+      if (typeof data[key] === 'number') {
+        valueString = data[key];
+      } else if (typeof data[key] === 'string') {
+        valueString = `"${data[key]}"`;
+      } else {
+        valueString = `"${JSON.stringify(data[key]).replace(/"/g, '""')}"`;
+      }
+      return valueString;
+    }).join(',')),
   );
-  return lineArray.join("\r\n");
+  return lineArray.join('\r\n');
 };

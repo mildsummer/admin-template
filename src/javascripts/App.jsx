@@ -10,7 +10,7 @@ export default class App extends Component {
   render() {
     return (
       <Router>
-        <div className='app-container'>
+        <div className="app-container">
           <Route path="/" exact component={List} />
           <Route path="/list" exact component={List} />
         </div>

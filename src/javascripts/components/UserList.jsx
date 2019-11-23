@@ -1,6 +1,7 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
+import moment from 'moment';
 
 class UserList extends PureComponent {
   render() {
@@ -9,7 +10,7 @@ class UserList extends PureComponent {
       <div
         className={classNames('user-list', {
           'user-list--loading': loading,
-          'user-list--empty': data.length === 0
+          'user-list--empty': data.length === 0,
         })}
       >
         {data.length ? (
@@ -21,6 +22,7 @@ class UserList extends PureComponent {
                 <th>Name</th>
                 <th>Age</th>
                 <th>Address</th>
+                <th>Email</th>
                 <th>CreatedAt</th>
               </tr>
             </thead>
@@ -31,8 +33,9 @@ class UserList extends PureComponent {
                   <td className="user-list__value">{item.docId}</td>
                   <td className="user-list__value">{item.name}</td>
                   <td className="user-list__value">{item.age}</td>
-                  <td className="user-list__value">{item.email || '-'}</td>
                   <td className="user-list__value">{item.address ? item.address : '-'}</td>
+                  <td className="user-list__value">{item.email || '-'}</td>
+                  <td className="user-list__value">{moment(item.createdAt.seconds * 1000).format('YYYY-MM-DD HH:mm:ss')}</td>
                 </tr>
               ))}
             </tbody>
@@ -43,13 +46,17 @@ class UserList extends PureComponent {
   }
 }
 
+UserList.defaultProps = {
+  loading: false,
+};
+
 UserList.propTypes = {
   loading: PropTypes.bool,
   data: PropTypes.arrayOf(PropTypes.shape({
     id: PropTypes.number.isRequired,
     email: PropTypes.string.isRequired,
-    address: PropTypes.string.isRequired
-  })).isRequired
+    address: PropTypes.string.isRequired,
+  })).isRequired,
 };
 
 export default UserList;
