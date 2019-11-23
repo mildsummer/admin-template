@@ -23,7 +23,8 @@ export default (WrappedComponent) => {
      */
     navigateWithQuery(path = '', query) {
       const { history, location } = this.props;
-      history.push(`${path ? `#${path}` : location.hash.split('?')[0]}?${queryString.stringify(query, QUERY_STRING_OPTIONS)}`);
+      const qs = queryString.stringify(query, QUERY_STRING_OPTIONS);
+      history.push(`${path ? `#${path}` : location.hash.split('?')[0]}${qs ? `?${qs}` : ''}`);
     }
 
     render() {
@@ -31,7 +32,7 @@ export default (WrappedComponent) => {
       const query = queryString.parse((location.hash || location.search).split('?')[1], QUERY_STRING_OPTIONS);
       return createElement(
         WrappedComponent,
-        assign({}, this.props, { query, navigateByQuery: this.navigateWithQuery }),
+        assign({}, this.props, { query, navigateWithQuery: this.navigateWithQuery }),
       );
     }
   }

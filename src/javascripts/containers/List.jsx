@@ -98,16 +98,16 @@ class List extends Component {
   handleChangeQuery(queryKey) {
     const keys = Array.isArray(queryKey) ? queryKey : [queryKey];
     return (...changedQuery) => {
-      const { query: currentQuery, navigateByQuery } = this.props;
+      const { query: currentQuery, navigateWithQuery } = this.props;
       const query = assign({}, currentQuery);
       changedQuery.forEach((value, index) => {
-        query[keys[index]] = value;
+        query[keys[index]] = value || value === 0 ? value : null;
       });
-      if (queryKey !== 'page') {
-        query.page = 1;
+      if (queryKey !== 'page' || query.page === 1) {
+        delete query.page;
       }
       if (!isEqual(currentQuery, query)) {
-        navigateByQuery('', query);
+        navigateWithQuery('', query);
       }
     };
   }
@@ -120,7 +120,7 @@ class List extends Component {
         <SearchForm
           inputs={SEARCH_CONFIG}
           onSubmit={this.handleChangeQuery(SEARCH_CONFIG.map((input) => (input.key)))}
-          defaultValues={SEARCH_CONFIG.map((input) => (query[input.key]))}
+          defaultValues={SEARCH_CONFIG.map((input) => (query[input.key] || input.defaultValue))}
         />
         <SearchDetail
           data={SEARCH_CONFIG
@@ -155,7 +155,7 @@ SEARCH_CONFIG.forEach((input) => {
 });
 List.propTypes = {
   query: PropTypes.shape(queryShape).isRequired,
-  navigateByQuery: PropTypes.func.isRequired,
+  navigateWithQuery: PropTypes.func.isRequired,
 };
 
 export default withQuery(List);
