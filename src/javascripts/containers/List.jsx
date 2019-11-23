@@ -9,6 +9,7 @@ import Pagination from '../components/Pagination';
 import SearchDetail from '../components/SearchDetail';
 import UserList from '../components/UserList';
 import arrayToCsv from '../utils/arrayToCsv';
+import downloadStringFile from '../utils/downloadStringFile';
 
 const SEARCH_CONFIG = [ // 検索フォームの設定
   {
@@ -86,11 +87,7 @@ class List extends Component {
     const { query } = this.props;
     const docs = await this.dbPagination.getAllDocs(assign({}, query, { page: null }));
     const csvContent = arrayToCsv(docs.map((doc) => (doc.data())), ['id']);
-    const downLoadLink = document.createElement('a');
-    downLoadLink.download = 'data.csv';
-    downLoadLink.href = URL.createObjectURL(new Blob([csvContent], { type: 'text/csv' }));
-    downLoadLink.dataset.downloadurl = ['text/csv', downLoadLink.download, downLoadLink.href].join(':');
-    downLoadLink.click();
+    downloadStringFile(csvContent, 'members.csv', 'text/csv', true);
   }
 
   /**

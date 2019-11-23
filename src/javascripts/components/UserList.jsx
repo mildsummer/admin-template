@@ -1,7 +1,6 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import moment from 'moment';
 
 class UserList extends PureComponent {
   render() {
@@ -35,7 +34,7 @@ class UserList extends PureComponent {
                   <td className="user-list__value">{item.age}</td>
                   <td className="user-list__value">{item.address ? item.address : '-'}</td>
                   <td className="user-list__value">{item.email || '-'}</td>
-                  <td className="user-list__value">{moment(item.createdAt.seconds * 1000).format('YYYY-MM-DD HH:mm:ss')}</td>
+                  <td className="user-list__value">{new Date(item.createdAt.seconds * 1000).toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>
