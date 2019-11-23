@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import isEqual from 'lodash.isequal';
 import assign from 'lodash.assign';
 import { db } from '../Firebase';
-import FirestorePagination from '../FirestorePagination';
+import FirestorePagination from '../utils/FirestorePagination';
 import withQuery from './_withQuery';
 import SearchForm from '../components/SearchForm';
 import Pagination from '../components/Pagination';
@@ -11,7 +11,7 @@ import SearchDetail from '../components/SearchDetail';
 import UserList from '../components/UserList';
 import arrayToCsv from '../utils/arrayToCsv';
 
-const SEARCH_CONFIG = [
+const SEARCH_CONFIG = [ // 検索フォームの設定
   {
     key: 'email',
     label: 'メールアドレス',
@@ -39,7 +39,7 @@ class List extends Component {
     super(props);
     this.handleChangeQuery = this.handleChangeQuery.bind(this);
     this.export = this.export.bind(this);
-    this.db = new FirestorePagination(db.collection('/members'), 'id', 'desc');
+    this.dbPagination = new FirestorePagination(db.collection('/members'), 'id', 'desc');
     this.state = {
       data: null,
       isLoading: false,
@@ -48,22 +48,29 @@ class List extends Component {
   }
 
   componentDidMount() {
+    // 初期読み込み
     const { query } = this.props;
     this.fetch(query);
   }
 
   componentDidUpdate(prevProps) {
+    // クエリ変更時に読み込み
     const { query: currentQuery } = this.props;
     if (!isEqual(prevProps.query, currentQuery)) {
       this.fetch(currentQuery);
     }
   }
 
+  /**
+   * DB読み込み
+   * @param {object} query
+   * @returns {Promise<void>}
+   */
   async fetch(query = null) {
     this.setState({
       isLoading: true,
     });
-    const { result, length } = await this.db
+    const { result, length } = await this.dbPagination
       .get(assign({}, query, { page: null }), query.page || 1);
     this.setState({
       data: result ? result.docs.map((doc) => (doc.data())) : [],
@@ -72,9 +79,13 @@ class List extends Component {
     });
   }
 
+  /**
+   * CSVエクスポート
+   * @returns {Promise<void>}
+   */
   async export() {
     const { query } = this.props;
-    const docs = await this.db.getAllDocs(assign({}, query, { page: null }));
+    const docs = await this.dbPagination.getAllDocs(assign({}, query, { page: null }));
     const csvContent = arrayToCsv(docs.map((doc) => (doc.data())));
     const downLoadLink = document.createElement('a');
     downLoadLink.download = 'data.csv';
@@ -83,6 +94,11 @@ class List extends Component {
     downLoadLink.click();
   }
 
+  /**
+   * クエリの変更に対応してURLを変更するFunctionを返す
+   * @param {string | Array<string>} queryKey
+   * @returns {Function}
+   */
   handleChangeQuery(queryKey) {
     const keys = Array.isArray(queryKey) ? queryKey : [queryKey];
     return (...changedQuery) => {

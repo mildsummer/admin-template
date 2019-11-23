@@ -1,3 +1,8 @@
+/**
+ * 単純なオブジェクトの配列をCSV文字列に変換
+ * @param {Array<object>} array
+ * @returns {string}
+ */
 export default (array) => {
   const keys = [];
   array.forEach((data) => {

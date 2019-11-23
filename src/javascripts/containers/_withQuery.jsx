@@ -4,6 +4,11 @@ import queryString from 'query-string';
 import assign from 'lodash.assign';
 import { QUERY_STRING_OPTIONS } from '../constants/common';
 
+/**
+ * react-routerのlocationからクエリを取得して扱いやすくするためのラッパーコンポーネントを生成
+ * @param {Component} WrappedComponent
+ * @returns {ComponentWithQuery}
+ */
 export default (WrappedComponent) => {
   class ComponentWithQuery extends Component {
     constructor(props) {
@@ -11,7 +16,12 @@ export default (WrappedComponent) => {
       this.navigateByQuery = this.navigateByQuery.bind(this);
     }
 
-    navigateByQuery(path = null, query) {
+    /**
+     * ページ遷移
+     * @param {string} path
+     * @param {object} query
+     */
+    navigateByQuery(path = '', query) {
       const { location, history } = this.props;
       history.push(`#${path || location.pathname}?${queryString.stringify(query, QUERY_STRING_OPTIONS)}`);
     }
