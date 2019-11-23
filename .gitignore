@@ -4,8 +4,7 @@
 *.map
 npm-debug.log
 yarn-error.log
-/firebase/node_modules
-/firebase/key.json
+firebasekey.json
 .env
 .firebaserc
 firebase.json
