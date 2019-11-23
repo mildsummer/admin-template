@@ -85,7 +85,7 @@ class List extends Component {
   async export() {
     const { query } = this.props;
     const docs = await this.dbPagination.getAllDocs(assign({}, query, { page: null }));
-    const csvContent = arrayToCsv(docs.map((doc) => (doc.data())));
+    const csvContent = arrayToCsv(docs.map((doc) => (doc.data())), ['id']);
     const downLoadLink = document.createElement('a');
     downLoadLink.download = 'data.csv';
     downLoadLink.href = URL.createObjectURL(new Blob([csvContent], { type: 'text/csv' }));

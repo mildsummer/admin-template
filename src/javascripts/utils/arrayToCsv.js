@@ -1,10 +1,11 @@
 /**
  * 単純なオブジェクトの配列をCSV文字列に変換
  * @param {Array<object>} array
+ * @param {Array<string>} keyArray
  * @returns {string}
  */
-export default (array) => {
-  const keys = [];
+export default (array, keyArray = []) => {
+  const keys = keyArray;
   array.forEach((data) => {
     Object.keys(data).forEach((key) => {
       if (keys.indexOf(key) === -1) {
