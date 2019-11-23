@@ -52,10 +52,10 @@ class List extends Component {
     this.fetch(query);
   }
 
-  componentWillReceiveProps(nextProps) {
+  componentDidUpdate(prevProps) {
     const { query: currentQuery } = this.props;
-    if (!isEqual(nextProps.query, currentQuery)) {
-      this.fetch(nextProps.query);
+    if (!isEqual(prevProps.query, currentQuery)) {
+      this.fetch(currentQuery);
     }
   }
 
@@ -70,6 +70,17 @@ class List extends Component {
       isLoading: false,
       pageLength: length,
     });
+  }
+
+  async export() {
+    const { query } = this.props;
+    const docs = await this.db.getAllDocs(assign({}, query, { page: null }));
+    const csvContent = arrayToCsv(docs.map((doc) => (doc.data())));
+    const downLoadLink = document.createElement('a');
+    downLoadLink.download = 'data.csv';
+    downLoadLink.href = URL.createObjectURL(new Blob([csvContent], { type: 'text/csv' }));
+    downLoadLink.dataset.downloadurl = ['text/csv', downLoadLink.download, downLoadLink.href].join(':');
+    downLoadLink.click();
   }
 
   handleChangeQuery(queryKey) {
@@ -87,17 +98,6 @@ class List extends Component {
         navigateByQuery('/', query);
       }
     };
-  }
-
-  async export() {
-    const { query } = this.props;
-    const docs = await this.db.getAllDocs(assign({}, query, { page: null }));
-    const csvContent = arrayToCsv(docs.map((doc) => (doc.data())));
-    const downLoadLink = document.createElement('a');
-    downLoadLink.download = 'data.csv';
-    downLoadLink.href = URL.createObjectURL(new Blob([csvContent], { type: 'text/csv' }));
-    downLoadLink.dataset.downloadurl = ['text/csv', downLoadLink.download, downLoadLink.href].join(':');
-    downLoadLink.click();
   }
 
   render() {
