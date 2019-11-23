@@ -22,8 +22,8 @@ export default (WrappedComponent) => {
      * @param {object} query
      */
     navigateWithQuery(path = '', query) {
-      const { location, history } = this.props;
-      history.push(`#${path || location.pathname}?${queryString.stringify(query, QUERY_STRING_OPTIONS)}`);
+      const { history, location } = this.props;
+      history.push(`${path ? `#${path}` : location.hash.split('?')[0]}?${queryString.stringify(query, QUERY_STRING_OPTIONS)}`);
     }
 
     render() {

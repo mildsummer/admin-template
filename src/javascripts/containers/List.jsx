@@ -110,7 +110,7 @@ class List extends Component {
         query.page = 1;
       }
       if (!isEqual(currentQuery, query)) {
-        navigateByQuery('/', query);
+        navigateByQuery('', query);
       }
     };
   }
