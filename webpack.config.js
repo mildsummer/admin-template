@@ -113,10 +113,6 @@ module.exports = (env, argv) => {
       new Dotenv({
         path: path.resolve(__dirname, './.env')
       }),
-      new webpack.NormalModuleReplacementPlugin(
-        /^hammerjs$/,
-        'hammerjs/hammer.min.js'
-      ),
       new RemoveSourceMapUrlWebpackPlugin({}),
       new LicenseInfoWebpackPlugin({
         glob: '{LICENSE,license,License}*',
