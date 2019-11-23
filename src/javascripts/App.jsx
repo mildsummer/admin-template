@@ -9,7 +9,7 @@ export default class App extends Component {
 
   render() {
     return (
-      <Router>
+      <Router basename={window.location.pathname}>
         <div className="app-container">
           <Route path="/" exact component={List} />
           <Route path="/list" exact component={List} />

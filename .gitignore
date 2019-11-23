@@ -7,6 +7,8 @@ yarn-error.log
 /firebase/node_modules
 /firebase/key.json
 .env
+.firebaserc
+firebase.json
 
 # Created by https://www.gitignore.io
 
