@@ -9,6 +9,7 @@ yarn-error.log
 .env
 .firebaserc
 firebase.json
+.firebase/
 
 # Created by https://www.gitignore.io
 
