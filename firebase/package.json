@@ -1,7 +1,7 @@
 {
   "name": "admin-template-firebase",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "createTestData.js",
   "license": "MIT",
   "dependencies": {
     "firebase-admin": "^8.8.0"

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import isEqual from 'lodash.isequal';
 import assign from 'lodash.assign';
 import FirestorePagination from '../utils/FirestorePagination';
-import withQuery from './_withQuery';
+import useQuery from './_useQuery';
 import SearchForm from '../components/SearchForm';
 import Pagination from '../components/Pagination';
 import SearchDetail from '../components/SearchDetail';
@@ -161,4 +161,4 @@ List.propTypes = {
   navigateByQuery: PropTypes.func.isRequired,
 };
 
-export default withQuery(List);
+export default useQuery(List);

@@ -13,7 +13,7 @@ export default (WrappedComponent) => {
   class ComponentWithQuery extends Component {
     constructor(props) {
       super(props);
-      this.navigateByQuery = this.navigateByQuery.bind(this);
+      this.navigateWithQuery = this.navigateWithQuery.bind(this);
     }
 
     /**
@@ -21,7 +21,7 @@ export default (WrappedComponent) => {
      * @param {string} path
      * @param {object} query
      */
-    navigateByQuery(path = '', query) {
+    navigateWithQuery(path = '', query) {
       const { location, history } = this.props;
       history.push(`#${path || location.pathname}?${queryString.stringify(query, QUERY_STRING_OPTIONS)}`);
     }
@@ -31,7 +31,7 @@ export default (WrappedComponent) => {
       const query = queryString.parse((location.hash || location.search).split('?')[1], QUERY_STRING_OPTIONS);
       return createElement(
         WrappedComponent,
-        assign({}, this.props, { query, navigateByQuery: this.navigateByQuery }),
+        assign({}, this.props, { query, navigateByQuery: this.navigateWithQuery }),
       );
     }
   }
