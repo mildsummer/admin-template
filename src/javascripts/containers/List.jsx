@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import isEqual from 'lodash.isequal';
 import assign from 'lodash.assign';
-import { db } from '../Firebase';
 import FirestorePagination from '../utils/FirestorePagination';
 import withQuery from './_withQuery';
 import SearchForm from '../components/SearchForm';
@@ -39,7 +38,7 @@ class List extends Component {
     super(props);
     this.handleChangeQuery = this.handleChangeQuery.bind(this);
     this.export = this.export.bind(this);
-    this.dbPagination = new FirestorePagination(db.collection('/members'), 'id', 'desc');
+    this.dbPagination = new FirestorePagination('/members', 'id', 'desc');
     this.state = {
       data: null,
       isLoading: false,

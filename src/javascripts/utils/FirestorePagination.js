@@ -1,13 +1,20 @@
 import queryString from 'querystring';
 import flatten from 'lodash.flatten';
+import { db } from '../Firebase';
 import { ITEM_PER_PAGE, QUERY_STRING_OPTIONS } from '../constants/common';
 
 /**
  * Firestoreでページング処理をするためのユーティリティ
  */
 export default class FirestorePagination {
-  constructor(baseCollectionRef, orderFieldPath, directionStr = 'asc') {
-    this.baseRef = baseCollectionRef;
+  /**
+   *
+   * @param {string} baseCollectionPath
+   * @param {string} orderFieldPath
+   * @param {string} directionStr
+   */
+  constructor(baseCollectionPath, orderFieldPath, directionStr = 'asc') {
+    this.baseRef = db.collection(baseCollectionPath);
     this.orderFieldPath = orderFieldPath;
     this.directionStr = directionStr;
     this.map = {};
