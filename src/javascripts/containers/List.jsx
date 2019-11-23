@@ -29,7 +29,7 @@ const SEARCH_CONFIG = [ // 検索フォームの設定
     props: {
       type: 'text',
       name: 'queryAddress',
-      placeholder: 'ex) 東京',
+      placeholder: 'ex) 東京都',
     },
   },
 ];
