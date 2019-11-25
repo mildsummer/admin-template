@@ -20,7 +20,7 @@ class SearchForm extends PureComponent {
       values[index] = e.target.value;
       this.setState({ values });
       if (typeof onChange === 'function') {
-        onChange(values);
+        onChange(...values);
       }
     };
   }
