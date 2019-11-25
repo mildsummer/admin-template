@@ -5,7 +5,6 @@ import assign from 'lodash.assign';
 import FirestorePagination from '../utils/FirestorePagination';
 import withQuery from './_withQuery';
 import SearchForm from '../components/SearchForm';
-import Pagination from '../components/Pagination';
 import SearchDetail from '../components/SearchDetail';
 import UserList from '../components/UserList';
 import arrayToCsv from '../utils/arrayToCsv';
@@ -34,15 +33,18 @@ const SEARCH_CONFIG = [ // 検索フォームの設定
   },
 ];
 
-class List extends Component {
+class InfiniteList extends Component {
   constructor(props) {
     super(props);
+    this.fetch = this.fetch.bind(this);
+    this.fetchNext = this.fetchNext.bind(this);
     this.handleChangeQuery = this.handleChangeQuery.bind(this);
     this.export = this.export.bind(this);
     this.dbPagination = new FirestorePagination('/members', 'id', 'desc');
     this.state = {
       data: null,
       isLoading: false,
+      page: 1,
       pageLength: Infinity,
     };
   }
@@ -65,14 +67,13 @@ class List extends Component {
    * @returns {Promise<void>}
    */
   async fetch() {
+    const { page, data } = this.state;
     const { query } = this.props;
+    this.setState({ isLoading: true });
+    const { result, length } = await this.dbPagination.get(query, page);
+    const newData = result ? result.docs.map((doc) => (doc.data())) : [];
     this.setState({
-      isLoading: true,
-    });
-    const { result, length } = await this.dbPagination
-      .get(assign({}, query, { page: null }), query.page || 1);
-    this.setState({
-      data: result ? result.docs.map((doc) => (doc.data())) : [],
+      data: (data || []).concat(newData),
       isLoading: false,
       pageLength: length,
     });
@@ -102,15 +103,27 @@ class List extends Component {
       changedQuery.forEach((value, index) => {
         query[keys[index]] = value || value === 0 ? value : null;
       });
-      if (queryKey !== 'page' || query.page === 1) {
-        delete query.page;
-      }
+      this.setState({ data: [], page: 1 });
       navigateWithQuery(null, query);
     };
   }
 
+  /**
+   * 追加読み込み
+   */
+  fetchNext() {
+    const { page } = this.state;
+    this.setState({ page: page + 1 });
+    this.fetch();
+  }
+
   render() {
-    const { data, isLoading, pageLength } = this.state;
+    const {
+      data,
+      page,
+      pageLength,
+      isLoading,
+    } = this.state;
     const { query } = this.props;
     return (
       <div className="container">
@@ -118,7 +131,6 @@ class List extends Component {
           inputs={SEARCH_CONFIG}
           onSubmit={this.handleChangeQuery(SEARCH_CONFIG.map((input) => (input.key)))}
           defaultValues={SEARCH_CONFIG.map((input) => (query[input.key] || input.defaultValue))}
-          disabled={isLoading}
         />
         <SearchDetail
           data={SEARCH_CONFIG
@@ -133,16 +145,15 @@ class List extends Component {
           CSVエクスポート
         </button>
         {data && (
-          <UserList data={data} loading={isLoading} />
-        )}
-        {data ? (
-          <Pagination
-            length={pageLength}
-            current={query.page}
-            onSelect={this.handleChangeQuery('page')}
-            disabled={isLoading}
+          <UserList
+            infinite
+            height={200}
+            data={data}
+            next={this.fetchNext}
+            hasMore={pageLength > page}
+            isLoading={isLoading}
           />
-        ) : null}
+        )}
       </div>
     );
   }
@@ -152,9 +163,9 @@ const queryShape = {};
 SEARCH_CONFIG.forEach((input) => {
   queryShape[input.key] = input.props.type === 'number' ? PropTypes.number : PropTypes.string;
 });
-List.propTypes = {
+InfiniteList.propTypes = {
   query: PropTypes.shape(queryShape).isRequired,
   navigateWithQuery: PropTypes.func.isRequired,
 };
 
-export default withQuery(List);
+export default withQuery(InfiniteList);

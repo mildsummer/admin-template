@@ -27,9 +27,9 @@ class SearchForm extends PureComponent {
 
   onSubmit(e) {
     e.preventDefault();
-    const { onSubmit } = this.props;
+    const { onSubmit, disabled } = this.props;
     const { values } = this.state;
-    if (typeof onSubmit === 'function') {
+    if (typeof onSubmit === 'function' && !disabled) {
       onSubmit(...values);
     }
   }
@@ -67,6 +67,7 @@ SearchForm.defaultProps = {
   onChange: null,
   onSubmit: null,
   defaultValues: [],
+  disabled: false,
 };
 
 SearchForm.propTypes = {
@@ -86,6 +87,7 @@ SearchForm.propTypes = {
   submitButtonTitle: PropTypes.string,
   onChange: PropTypes.func,
   onSubmit: PropTypes.func,
+  disabled: PropTypes.bool,
 };
 
 export default SearchForm;

@@ -3,14 +3,19 @@ import PropTypes from 'prop-types';
 // import times from 'lodash.times';
 
 const Pagination = (props) => {
-  const { current, length, onSelect } = props;
+  const {
+    current,
+    length,
+    onSelect,
+    disabled,
+  } = props;
   return (
     <div className="pagination">
       <button
         className="pagination__button pagination__button--prev"
         type="button"
         disabled={current <= 1}
-        onClick={() => onSelect(current - 1)}
+        onClick={() => { if (!disabled) onSelect(current - 1); }}
       >
         前へ
       </button>
@@ -18,7 +23,7 @@ const Pagination = (props) => {
         className="pagination__button pagination__button--next"
         type="button"
         disabled={current >= length}
-        onClick={() => onSelect(current + 1)}
+        onClick={() => { if (!disabled) onSelect(current + 1); }}
       >
         次へ
       </button>
@@ -42,12 +47,14 @@ const Pagination = (props) => {
 
 Pagination.defaultProps = {
   current: 1,
+  disabled: false,
 };
 
 Pagination.propTypes = {
   length: PropTypes.number.isRequired,
   current: PropTypes.number,
   onSelect: PropTypes.func.isRequired,
+  disabled: PropTypes.bool,
 };
 
 export default Pagination;

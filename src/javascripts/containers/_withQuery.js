@@ -23,13 +23,18 @@ export default (WrappedComponent) => {
      */
     navigateWithQuery(path = '', query) {
       const { history, location } = this.props;
-      const qs = queryString.stringify(query, QUERY_STRING_OPTIONS);
-      history.push(`${path ? `#${path}` : location.hash.split('?')[0]}${qs ? `?${qs}` : ''}`);
+      let qs = queryString.stringify(query, QUERY_STRING_OPTIONS);
+      if (qs) {
+        qs = `?${qs}`;
+      }
+      if (qs !== location.search) {
+        history.push(`${path ? `#${path}` : location.pathname}${qs}`);
+      }
     }
 
     render() {
       const { location } = this.props;
-      const query = queryString.parse((location.hash || location.search).split('?')[1], QUERY_STRING_OPTIONS);
+      const query = queryString.parse((location.search).split('?')[1], QUERY_STRING_OPTIONS);
       return createElement(
         WrappedComponent,
         assign({}, this.props, { query, navigateWithQuery: this.navigateWithQuery }),
