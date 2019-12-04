@@ -2,6 +2,7 @@ import queryString from 'querystring';
 import flatten from 'lodash.flatten';
 import { db } from '../Firebase';
 import { ITEM_PER_PAGE, QUERY_STRING_OPTIONS } from '../constants/common';
+import FirestorePageManager from './FirestorePageManager';
 
 /**
  * Firestoreでページング処理をするためのユーティリティ
@@ -17,8 +18,6 @@ export default class FirestorePagination {
     this.orderFieldPath = orderFieldPath;
     this.directionStr = directionStr;
     this.map = {};
-    this.lastDocMap = {};
-    this.pageLengthMap = {};
   }
 
   /**
@@ -40,17 +39,19 @@ export default class FirestorePagination {
 
   /**
    * Firestoreクエリに対して変更を監視
-   * @param {firebase.firestore.Query} fsQuery
+   * @param {FirestorePageManager} fsPageManager
    * @param {object} query
-   * @param {number} page
    * @private
    */
-  _listenSnapshot(fsQuery, query, page) {
-    const queryKey = queryString.stringify(query, QUERY_STRING_OPTIONS);
-    fsQuery.onSnapshot((snapshot) => {
-      this.map[queryKey][page - 1] = snapshot;
+  _listenSnapshot(fsPageManager, query) {
+    fsPageManager.onUpdate(({ snapshot, page, length }) => {
       if (this.onUpdateCallback) {
-        this.onUpdateCallback({ query, page, snapshot });
+        this.onUpdateCallback({
+          query,
+          page,
+          snapshot,
+          length,
+        });
       }
     });
   }
@@ -66,85 +67,28 @@ export default class FirestorePagination {
   }
 
   /**
-   * クエリから最後のドキュメントを取得
-   * @param {object} query
-   * @returns {firebase.firestore.Query}
-   * @private
-   */
-  _getLastDocQuery(query) {
-    return this._getFSQuery(query, this.directionStr === 'asc' ? 'desc' : 'asc').limit(1);
-  }
-
-  /**
-   * 指定したページまでの全てのデータを同期的に取得
-   * @param {object} query
-   * @param {number} page
-   * @returns {Promise<void>}
-   * @private
-   */
-  async _loadAllPageTo(query, page) {
-    for (let i = 1; i <= page; i += 1) {
-      await this.get(query, i);
-    }
-  }
-
-  /**
    * 指定したページのデータを取得
    * @param {object} query
    * @param {number} page
-   * @param {number} itemPerPage
+   * @param {number} itemsPerPage
    * @returns {Promise<{result: firebase.firestore.QuerySnapshot, length: number}>}
    */
-  async get(query, page = 1, itemPerPage = ITEM_PER_PAGE) {
-    const pageIndex = page ? page - 1 : 0;
-    let fsQuery = null;
+  async get(query, page = 1, itemsPerPage = ITEM_PER_PAGE) {
     const queryKey = queryString.stringify(query, QUERY_STRING_OPTIONS);
-    let current = this.map[queryKey];
-    let result = null;
-    if (current) { // すでに同じクエリで取得済み
-      if (current[pageIndex]) { // 同じページを取得済み
-        result = current[pageIndex];
-      } else if (current[pageIndex - 1]) { // 前のページを取得済み
-        const prevPageDocs = current[pageIndex - 1].docs;
-        const startAfter = prevPageDocs[prevPageDocs.length - 1];
-        fsQuery = this._getFSQuery(query).startAfter(startAfter).limit(itemPerPage);
-        result = await fsQuery.get();
-      } else if (current[pageIndex + 1]) { // 次のページを取得済み（発生しないはずだけど一応）
-        const endBefore = current[page].docs[0];
-        fsQuery = this._getFSQuery(query).endBefore(endBefore).limit(itemPerPage);
-        result = await fsQuery.get();
-      } else if (page <= this.pageLengthMap[queryKey]) { // ページを飛ばした場合
-        await this._loadAllPageTo(query, page);
-        result = current[pageIndex];
-      }
-    } else if (page === 1) { // 初めてのクエリで最初のページ
-      fsQuery = this._getFSQuery(query).limit(itemPerPage);
-      result = await fsQuery.get();
-      current = [];
-      this.map[queryKey] = current;
-      const lastDocQuery = this._getLastDocQuery(query);
-      const lastSnapshot = await lastDocQuery.get();
-      [this.lastDocMap[queryKey]] = lastSnapshot.docs;
-    } else { // 初めてのクエリでページを飛ばした場合
-      await this._loadAllPageTo(query, page);
-      result = this.map[queryKey][pageIndex];
-    }
-    if (result && result.docs.length) {
-      this.map[queryKey][pageIndex] = result;
-      if (this.lastDocMap[queryKey]
-        && result.docs[result.docs.length - 1].isEqual(this.lastDocMap[queryKey])) {
-        this.pageLengthMap[queryKey] = page;
-      }
-    } else if (page === 1) {
-      this.pageLengthMap[queryKey] = 0;
-    }
-    if (fsQuery) {
-      this._listenSnapshot(fsQuery, query, page);
+    let fsPageManager = this.map[queryKey];
+    let fsPage = null;
+    if (fsPageManager) { // すでに同じクエリで取得済み
+      fsPage = await fsPageManager.load(page);
+    } else { // 初めてのクエリ
+      fsPageManager = new FirestorePageManager(this._getFSQuery(query), itemsPerPage);
+      fsPage = await fsPageManager.load(page);
+      this.map[queryKey] = fsPageManager;
+      this._listenSnapshot(fsPageManager, query);
     }
 
     return {
-      result,
-      length: typeof this.pageLengthMap[queryKey] === 'number' ? this.pageLengthMap[queryKey] : Infinity,
+      result: fsPage && fsPage.snapshot,
+      length: typeof fsPageManager.length === 'number' ? fsPageManager.length : Infinity,
     };
   }
 
@@ -155,13 +99,13 @@ export default class FirestorePagination {
    */
   async getAllDocs(query) {
     const queryKey = queryString.stringify(query, QUERY_STRING_OPTIONS);
-    let docs = null;
-    if (typeof this.pageLengthMap[queryKey] === 'number') {
-      docs = flatten(this.map[queryKey].map((snapshot) => (snapshot.docs)));
+    let result = null;
+    if (typeof this.map[queryKey].length === 'number') {
+      result = flatten(this.map[queryKey].pages.map((fsPage) => (fsPage.snapshot.docs)));
     } else {
-      const result = await this._getFSQuery(query).get();
-      docs = result.docs;
+      const { docs } = await this._getFSQuery(query).get();
+      result = docs;
     }
-    return docs;
+    return result;
   }
 }

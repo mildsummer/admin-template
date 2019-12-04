@@ -40,22 +40,7 @@ class List extends Component {
     this.handleChangeQuery = this.handleChangeQuery.bind(this);
     this.export = this.export.bind(this);
     this.dbPagination = new FirestorePagination('/members', 'id', 'desc');
-    this.dbPagination.onUpdate(({ query, page, snapshot }) => {
-      const { query: currentQuery } = this.props;
-      const currentPage = typeof currentQuery.page === 'number' ? currentQuery.page : 1;
-      if (page === currentPage && !isEqual(currentQuery, query)) {
-        const newData = snapshot.docs.map((doc) => (doc.data()));
-        const { data } = this.state;
-        const updatedItemIds = newData.filter((item, index) => (!isEqual(item, data[index])))
-          .map((item) => (item.id));
-        if (updatedItemIds.length) {
-          this.setState({
-            data: newData,
-            // updatedItemIds,
-          });
-        }
-      }
-    });
+    this.dbPagination.onUpdate(this.onUpdate.bind(this));
     this.state = {
       data: null,
       isLoading: false,
@@ -73,6 +58,22 @@ class List extends Component {
     const { query: currentQuery } = this.props;
     if (!isEqual(prevProps.query, currentQuery)) {
       this.fetch();
+    }
+  }
+
+  onUpdate({
+    query,
+    page,
+    snapshot,
+    length,
+  }) {
+    const { query: currentQuery } = this.props;
+    const currentPage = typeof currentQuery.page === 'number' ? currentQuery.page : 1;
+    if (page === currentPage && !isEqual(currentQuery, query)) {
+      this.setState({
+        data: snapshot ? snapshot.docs.map((doc) => (doc.data())) : [],
+        pageLength: length,
+      });
     }
   }
 
