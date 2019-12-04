@@ -16,11 +16,13 @@ const collectionPath = 'members';
   try {
     // データをクリア
     const snapshot = await db.collection('members')
+      .orderBy('id', 'desc')
+      .limit(1)
       .get();
-    const currentLength = snapshot.docs.length;
+    const maxId = snapshot.docs[0].data().id;
 
     // データを作成
-    for (let i = currentLength + 1; i <= currentLength + length; i++) {
+    for (let i = maxId + 1; i <= maxId + length; i++) {
       const docId = db.collection(collectionPath).doc().id;
       const memberId = (`000000000${i}`).slice(-10);
       const name = `user${i}`;
