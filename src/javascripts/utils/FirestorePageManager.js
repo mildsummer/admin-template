@@ -85,7 +85,7 @@ export default class FirestorePageManager {
   async onUpdatePage(page, snapshot, lastDocChanged) {
     const index = page - 1;
     if (this.onUpdateCallback) {
-      this.onUpdateCallback({ page, snapshot, length: this.length });
+      this.onUpdateCallback({ page, snapshot, length: typeof this.length === 'number' ? this.length : Infinity });
       if (lastDocChanged && this.pages[index + 1]) {
         for (let i = page + 1; i <= this.pages.length; i += 1) {
           await this._setPage(i);
