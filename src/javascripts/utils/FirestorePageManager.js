@@ -17,23 +17,19 @@ export default class FirestorePageManager {
     }
   }
 
-  clearPage(page) {
-    const index = page - 1;
-    if (this.pages[index]) {
-      this.pages[index].unsubscribe();
-      delete this.pages[index];
-    }
-  }
-
-  async addPage(page) {
+  async setPage(page) {
     const index = page - 1;
     const startAfter = index === 0 ? null : this.pages[index - 1].lastDoc;
-    const fsPage = new FirestorePage(this.fsQuery, index === 0
-      ? null : startAfter, this.itemsPerPage);
-    fsPage
-      .onUpdate((snapshot, lastDocChanged) => this.onUpdatePage(page, snapshot, lastDocChanged));
-    await fsPage.load();
-    this.pages[index] = fsPage;
+    if (this.pages[index]) {
+      await this.pages[index].resetStartAfter(startAfter);
+    } else {
+      const fsPage = new FirestorePage(this.fsQuery, index === 0
+        ? null : startAfter, this.itemsPerPage);
+      fsPage
+        .onUpdate((snapshot, lastDocChanged) => this.onUpdatePage(page, snapshot, lastDocChanged));
+      await fsPage.load();
+      this.pages[index] = fsPage;
+    }
   }
 
   async checkLength() {
@@ -55,8 +51,7 @@ export default class FirestorePageManager {
       this.updateCallback({ page, snapshot, length: this.length });
       if (lastDocChanged && this.pages[index + 1]) {
         for (let i = page + 1; i <= this.pages.length; i += 1) {
-          this.clearPage(i);
-          await this.addPage(i);
+          await this.setPage(i);
           if (i === this.pages.length) {
             await this.checkLength();
           }
@@ -74,7 +69,7 @@ export default class FirestorePageManager {
     const index = page - 1;
     if (!this.pages[index] && (typeof this.length !== 'number' || this.length >= page)) {
       if (index === 0 || this.pages[index - 1]) {
-        await this.addPage(page);
+        await this.setPage(page);
       } else {
         for (let i = 1; i <= page; i += 1) {
           await this.load(i);

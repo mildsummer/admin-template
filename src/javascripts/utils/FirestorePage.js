@@ -2,6 +2,7 @@ export default class FirestorePage {
   constructor(baseFsQuery, startAfter, itemsPerPage) {
     this.hasInitialized = false;
     this.baseFsQuery = baseFsQuery;
+    this.itemsPerPage = itemsPerPage;
     this.fsQuery = (startAfter ? baseFsQuery.startAfter(startAfter) : baseFsQuery)
       .limit(itemsPerPage);
   }
@@ -12,10 +13,15 @@ export default class FirestorePage {
     return this.snapshot;
   }
 
-  unsubscribe() {
+  async resetStartAfter(startAfter) {
+    this.hasInitialized = false;
+    delete this.snapshot;
+    this.fsQuery = (startAfter ? this.baseFsQuery.startAfter(startAfter) : this.baseFsQuery)
+      .limit(this.itemsPerPage);
     if (this._unsubscribe) {
       this._unsubscribe();
     }
+    await this.load();
   }
 
   onSnapshot(snapshot) {
