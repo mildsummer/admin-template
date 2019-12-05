@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import isEqual from 'lodash.isequal';
 import assign from 'lodash.assign';
-import FirestorePagination from '../utils/FirestorePagination';
+import FirestoreQueryPagination from '../utils/FirestoreQueryPagination';
 import withQuery from './_withQuery';
 import SearchForm from '../components/SearchForm';
 import SearchDetail from '../components/SearchDetail';
@@ -40,7 +40,7 @@ class InfiniteList extends Component {
     this.fetchNext = this.fetchNext.bind(this);
     this.handleChangeQuery = this.handleChangeQuery.bind(this);
     this.export = this.export.bind(this);
-    this.dbPagination = new FirestorePagination('/members', 'id', 'desc');
+    this.dbPagination = new FirestoreQueryPagination('/members', 'id', 'desc');
     this.state = {
       data: null,
       isLoading: false,

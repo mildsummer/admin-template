@@ -29,7 +29,8 @@
     "no-console": "warn",
     "no-underscore-dangle": [2, { "allowAfterThis": true }],
     "no-await-in-loop": "off",
-    "prefer-destructuring": ["error", {"object": true, "array": false}]
+    "prefer-destructuring": ["error", {"object": true, "array": false}],
+    "max-len": ["error", { "code": 120, "comments": 200 }]
   },
   "parser": "babel-eslint",
   "plugins": [

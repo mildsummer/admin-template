@@ -1,4 +1,14 @@
+/**
+ * Firestoreでページング処理をするためのユーティリティ
+ * ページ単位を扱う
+ */
 export default class FirestorePage {
+  /**
+   *
+   * @param {firebase.firestore.Query} baseFsQuery
+   * @param {firebase.firestore.QueryDocumentSnapshot} startAfter
+   * @param {number} itemsPerPage
+   */
   constructor(baseFsQuery, startAfter, itemsPerPage) {
     this.hasInitialized = false;
     this.baseFsQuery = baseFsQuery;
@@ -7,12 +17,23 @@ export default class FirestorePage {
       .limit(itemsPerPage);
   }
 
+  /**
+   * データの取得
+   * 監視を開始する
+   * @returns {Promise<firebase.firestore.QuerySnapshot>}
+   */
   async load() {
-    this._unsubscribe = this.fsQuery.onSnapshot(this.onSnapshot.bind(this));
+    this._unsubscribe = this.fsQuery.onSnapshot(this._onSnapshot.bind(this));
     this.snapshot = await this.fsQuery.get();
     return this.snapshot;
   }
 
+  /**
+   * startAfterを変更しデータを取得
+   * 監視を開始する
+   * @param {firebase.firestore.QueryDocumentSnapshot} startAfter
+   * @returns {Promise<firebase.firestore.QuerySnapshot>}
+   */
   async resetStartAfter(startAfter) {
     this.hasInitialized = false;
     delete this.snapshot;
@@ -21,10 +42,14 @@ export default class FirestorePage {
     if (this._unsubscribe) {
       this._unsubscribe();
     }
-    await this.load();
+    return this.load();
   }
 
-  onSnapshot(snapshot) {
+  /**
+   * スナップショットをハンドリング
+   * @param {firebase.firestore.QuerySnapshot} snapshot
+   */
+  _onSnapshot(snapshot) {
     if (!this.hasInitialized || !this.snapshot) {
       this.hasInitialized = true;
     } else {
@@ -37,23 +62,43 @@ export default class FirestorePage {
       } else if (currentLastDoc) {
         lastDocChanged = true;
       }
-      if (this.updateCallback) {
-        this.updateCallback(snapshot, lastDocChanged);
+      if (this.onUpdateCallback) {
+        this.onUpdateCallback(snapshot, lastDocChanged);
       }
     }
   }
 
+  /**
+   * データの変更時に呼ばれる関数をセットする
+   * @param {function} callback
+   */
   onUpdate(callback) {
     if (typeof callback === 'function') {
-      this.updateCallback = callback;
+      this.onUpdateCallback = callback;
     }
   }
 
+  /**
+   * ページにドキュメントが含まれるかどうかを返す
+   * @returns {boolean}
+   */
   get hasDocs() {
     return !this.snapshot.empty;
   }
 
+  /**
+   * ページの最後のドキュメントを返す
+   * @returns {firebase.firestore.QueryDocumentSnapshot | null}
+   */
   get lastDoc() {
     return this.hasDocs ? this.snapshot.docs[this.snapshot.docs.length - 1] : null;
+  }
+
+  /**
+   * 全てのドキュメントを返す
+   * @returns {firebase.firestore.QueryDocumentSnapshot[]}
+   */
+  get docs() {
+    return this.hasDocs ? this.snapshot.docs : [];
   }
 }

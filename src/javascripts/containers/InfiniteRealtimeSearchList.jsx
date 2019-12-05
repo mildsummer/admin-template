@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import assign from 'lodash.assign';
-import FirestorePagination from '../utils/FirestorePagination';
+import FirestoreQueryPagination from '../utils/FirestoreQueryPagination';
 import SearchForm from '../components/SearchForm';
 import UserList from '../components/UserList';
 import arrayToCsv from '../utils/arrayToCsv';
@@ -37,7 +37,7 @@ class InfiniteRealtimeSearchList extends Component {
     this.fetchNext = this.fetchNext.bind(this);
     this.handleChangeQuery = this.handleChangeQuery.bind(this);
     this.export = this.export.bind(this);
-    this.dbPagination = new FirestorePagination('/members', 'id', 'desc');
+    this.dbPagination = new FirestoreQueryPagination('/members', 'id', 'desc');
     this.state = {
       data: null,
       isLoading: false,

@@ -1,5 +1,4 @@
 import queryString from 'querystring';
-import flatten from 'lodash.flatten';
 import { db } from '../Firebase';
 import { ITEM_PER_PAGE, QUERY_STRING_OPTIONS } from '../constants/common';
 import FirestorePageManager from './FirestorePageManager';
@@ -7,7 +6,7 @@ import FirestorePageManager from './FirestorePageManager';
 /**
  * Firestoreでページング処理をするためのユーティリティ
  */
-export default class FirestorePagination {
+export default class FirestoreQueryPagination {
   /**
    * @param {string} baseCollectionPath
    * @param {string} orderFieldPath
@@ -95,17 +94,10 @@ export default class FirestorePagination {
   /**
    * ページに関係なく全てのドキュメントを取得
    * @param {object} query
-   * @returns {Promise<firebase.firestore.QueryDocumentSnapshot[] | Array>}
+   * @returns {Promise<firebase.firestore.QueryDocumentSnapshot[]>}
    */
   async getAllDocs(query) {
     const queryKey = queryString.stringify(query, QUERY_STRING_OPTIONS);
-    let result = null;
-    if (typeof this.map[queryKey].length === 'number') {
-      result = flatten(this.map[queryKey].pages.map((fsPage) => (fsPage.snapshot.docs)));
-    } else {
-      const { docs } = await this._getFSQuery(query).get();
-      result = docs;
-    }
-    return result;
+    return this.map[queryKey].getAllDocs();
   }
 }

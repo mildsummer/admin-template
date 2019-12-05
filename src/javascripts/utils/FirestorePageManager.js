@@ -1,23 +1,48 @@
+import flatten from 'lodash.flatten';
 import FirestorePage from './FirestorePage';
 
+/**
+ * Firestoreでページング処理をするためのユーティリティ
+ * 一つの検索クエリでの全てのページを扱う
+ */
 export default class FirestorePageManager {
+  /**
+   *
+   * @param {firebase.firestore.Query | firebase.firestore.CollectionReference} fsQueryOrCollectionRef
+   * @param {number} itemsPerPage
+   */
   constructor(fsQueryOrCollectionRef, itemsPerPage) {
     this.fsQuery = fsQueryOrCollectionRef;
     this.itemsPerPage = itemsPerPage;
     this.pages = [];
   }
 
+  /**
+   * ページ番号を指定してFirestorePageインスタンスを返す
+   * @param {number} page
+   * @returns {FirestorePage}
+   */
   get(page) {
     return this.pages[page - 1];
   }
 
+  /**
+   * データの変更時に呼ばれる関数をセットする
+   * @param {function} callback
+   */
   onUpdate(callback) {
     if (typeof callback === 'function') {
-      this.updateCallback = callback;
+      this.onUpdateCallback = callback;
     }
   }
 
-  async setPage(page) {
+  /**
+   * ページ番号を指定してFirebasePageを初期化
+   * あるいはstartAfterを更新する
+   * @param {number} page
+   * @returns {Promise<void>}
+   */
+  async _setPage(page) {
     const index = page - 1;
     const startAfter = index === 0 ? null : this.pages[index - 1].lastDoc;
     if (this.pages[index]) {
@@ -32,7 +57,11 @@ export default class FirestorePageManager {
     }
   }
 
-  async checkLength() {
+  /**
+   * 最大のページ数をチェックして更新する
+   * @returns {Promise<void>}
+   */
+  async _checkLength() {
     this.pages = this.pages.filter((fsPage) => (fsPage.hasDocs));
     const currentLength = this.pages.length;
     const nextDocQuerySnapshot = await this.fsQuery
@@ -45,17 +74,25 @@ export default class FirestorePageManager {
     }
   }
 
+  /**
+   * ページのデータ更新時に呼ばれる
+   * そのページの最後のドキュメントが変わったらそれ以降のページも更新する
+   * @param {number} page
+   * @param {firebase.firestore.QuerySnapshot} snapshot
+   * @param {boolean} lastDocChanged
+   * @returns {Promise<void>}
+   */
   async onUpdatePage(page, snapshot, lastDocChanged) {
     const index = page - 1;
-    if (this.updateCallback) {
-      this.updateCallback({ page, snapshot, length: this.length });
+    if (this.onUpdateCallback) {
+      this.onUpdateCallback({ page, snapshot, length: this.length });
       if (lastDocChanged && this.pages[index + 1]) {
         for (let i = page + 1; i <= this.pages.length; i += 1) {
-          await this.setPage(i);
+          await this._setPage(i);
           if (i === this.pages.length) {
-            await this.checkLength();
+            await this._checkLength();
           }
-          this.updateCallback({
+          this.onUpdateCallback({
             page: i,
             snapshot: this.pages[i - 1] ? this.pages[i - 1].snapshot : null,
             length: typeof this.length === 'number' ? this.length : Infinity,
@@ -65,11 +102,16 @@ export default class FirestorePageManager {
     }
   }
 
+  /**
+   * ページ番号を指定してデータを取得
+   * @param {number} page
+   * @returns {Promise<FirestorePage | null>}
+   */
   async load(page) {
     const index = page - 1;
     if (!this.pages[index] && (typeof this.length !== 'number' || this.length >= page)) {
       if (index === 0 || this.pages[index - 1]) {
-        await this.setPage(page);
+        await this._setPage(page);
       } else {
         for (let i = 1; i <= page; i += 1) {
           await this.load(i);
@@ -77,8 +119,23 @@ export default class FirestorePageManager {
       }
     }
     if (!this.pages[index + 1]) {
-      await this.checkLength();
+      await this._checkLength();
     }
     return this.pages[index] || null;
+  }
+
+  /**
+   * 全てのドキュメントを取得
+   * @returns {Promise<firebase.firestore.QueryDocumentSnapshot[]>}
+   */
+  async getAllDocs() {
+    let result = [];
+    if (typeof this.length === 'number') {
+      result = flatten(this.pages.map((fsPage) => (fsPage.docs)));
+    } else {
+      const { docs } = await this.fsQuery.get();
+      result = docs;
+    }
+    return result;
   }
 }
