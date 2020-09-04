@@ -37,7 +37,7 @@
     "iconfont-webpack-plugin": "^4.2.1",
     "import-glob-loader": "^1.1.0",
     "license-info-webpack-plugin": "^2.0.0",
-    "node-sass": "^4.13.0",
+    "node-sass": "^4.13.1",
     "postcss-loader": "^3.0.0",
     "sass-loader": "^8.0.0",
     "style-loader": "^1.0.0",
